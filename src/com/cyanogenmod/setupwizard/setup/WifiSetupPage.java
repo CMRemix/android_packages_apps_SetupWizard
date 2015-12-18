@@ -31,7 +31,6 @@ import android.util.Log;
 
 import com.cyanogenmod.setupwizard.R;
 import com.cyanogenmod.setupwizard.SetupWizardApp;
-import com.cyanogenmod.setupwizard.cmstats.SetupStats;
 import com.cyanogenmod.setupwizard.ui.LoadingFragment;
 import com.cyanogenmod.setupwizard.ui.SetupPageFragment;
 import com.cyanogenmod.setupwizard.util.SetupWizardUtils;
@@ -83,9 +82,6 @@ public class WifiSetupPage extends SetupPage {
                             ActivityOptions.makeCustomAnimation(mContext,
                                     android.R.anim.fade_in,
                                     android.R.anim.fade_out);
-                    SetupStats.addEvent(SetupStats.Categories.EXTERNAL_PAGE_LOAD,
-                            SetupStats.Action.EXTERNAL_PAGE_LAUNCH,
-                            SetupStats.Label.PAGE,  SetupStats.Label.CAPTIVE_PORTAL_LOGIN);
                     mLoadingFragment.startActivityForResult(intent,
                             SetupWizardApp.REQUEST_CODE_SETUP_CAPTIVE_PORTAL,
                             options.toBundle());
@@ -154,19 +150,10 @@ public class WifiSetupPage extends SetupPage {
     public boolean onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == SetupWizardApp.REQUEST_CODE_SETUP_WIFI) {
             if (resultCode == Activity.RESULT_CANCELED) {
-                SetupStats.addEvent(SetupStats.Categories.EXTERNAL_PAGE_LOAD,
-                        SetupStats.Action.EXTERNAL_PAGE_RESULT,
-                        SetupStats.Label.WIFI_SETUP, "canceled");
-                        getCallbacks().onPreviousPage();
+                getCallbacks().onPreviousPage();
             } else if (resultCode == Activity.RESULT_OK) {
-                SetupStats.addEvent(SetupStats.Categories.EXTERNAL_PAGE_LOAD,
-                        SetupStats.Action.EXTERNAL_PAGE_RESULT,
-                        SetupStats.Label.WIFI_SETUP, "success");
                 checkForCaptivePortal();
             } else {
-                SetupStats.addEvent(SetupStats.Categories.EXTERNAL_PAGE_LOAD,
-                        SetupStats.Action.EXTERNAL_PAGE_RESULT,
-                        SetupStats.Label.WIFI_SETUP, "skipped");
                 getCallbacks().onNextPage();
             }
         } else if (requestCode == SetupWizardApp.REQUEST_CODE_SETUP_CAPTIVE_PORTAL) {
@@ -176,20 +163,11 @@ public class WifiSetupPage extends SetupPage {
             }
             String token = data.getStringExtra("response_token");
             if (token != null && !token.equals(mResponseToken)) {
-                SetupStats.addEvent(SetupStats.Categories.EXTERNAL_PAGE_LOAD,
-                        SetupStats.Action.EXTERNAL_PAGE_RESULT,
-                        SetupStats.Label.CAPTIVE_PORTAL_LOGIN, "token_mismatch");
                 launchWifiSetup();
             } else {
                 if (resultCode == Activity.RESULT_CANCELED) {
-                    SetupStats.addEvent(SetupStats.Categories.EXTERNAL_PAGE_LOAD,
-                            SetupStats.Action.EXTERNAL_PAGE_RESULT,
-                            SetupStats.Label.CAPTIVE_PORTAL_LOGIN, "canceled");
                     launchWifiSetup();
                 } else {
-                    SetupStats.addEvent(SetupStats.Categories.EXTERNAL_PAGE_LOAD,
-                            SetupStats.Action.EXTERNAL_PAGE_RESULT,
-                            SetupStats.Label.CAPTIVE_PORTAL_LOGIN, "success");
                     getCallbacks().onNextPage();
                 }
             }
@@ -253,9 +231,6 @@ public class WifiSetupPage extends SetupPage {
                 ActivityOptions.makeCustomAnimation(mContext,
                         android.R.anim.fade_in,
                         android.R.anim.fade_out);
-        SetupStats.addEvent(SetupStats.Categories.EXTERNAL_PAGE_LOAD,
-                SetupStats.Action.EXTERNAL_PAGE_LAUNCH,
-                SetupStats.Label.PAGE,  SetupStats.Label.WIFI_SETUP);
         mLoadingFragment.startActivityForResult(intent,
                 SetupWizardApp.REQUEST_CODE_SETUP_WIFI, options.toBundle());
     }

@@ -40,7 +40,6 @@ import android.widget.TextView;
 
 import com.cyanogenmod.setupwizard.R;
 import com.cyanogenmod.setupwizard.SetupWizardApp;
-import com.cyanogenmod.setupwizard.cmstats.SetupStats;
 import com.cyanogenmod.setupwizard.ui.SetupPageFragment;
 import com.cyanogenmod.setupwizard.util.SetupWizardUtils;
 
@@ -233,9 +232,6 @@ public class OtherSettingsPage extends SetupPage {
         private void onToggleBackup(boolean checked) {
             try {
                 mBackupManager.setBackupEnabled(checked);
-                SetupStats.addEvent(SetupStats.Categories.SETTING_CHANGED,
-                        SetupStats.Action.ENABLE_BACKUP,
-                        SetupStats.Label.CHECKED, String.valueOf(checked));
             } catch (RemoteException e) {}
             updateBackupToggle();
         }
@@ -309,10 +305,6 @@ public class OtherSettingsPage extends SetupPage {
         }
 
         private void onToggleLocationAccess(boolean checked) {
-            SetupStats.addEvent(SetupStats.Categories.SETTING_CHANGED,
-                    SetupStats.Action.ENABLE_LOCATION,
-                    SetupStats.Label.CHECKED, String.valueOf(checked));
-
             if (checked) {
                 setLocationMode(Settings.Secure.LOCATION_MODE_SENSORS_ONLY);
             } else {
@@ -321,10 +313,6 @@ public class OtherSettingsPage extends SetupPage {
         }
 
         private void onToggleBatterySaving(boolean checked) {
-            /* SetupStats.addEvent(SetupStats.Categories.SETTING_CHANGED,
-                    SetupStats.Action.ENABLE_BATTERY_SAVING_LOCATION,
-                    SetupStats.Label.CHECKED, String.valueOf(checked)); */
-
             if (checked) {
                 setLocationMode(Settings.Secure.LOCATION_MODE_BATTERY_SAVING);
             } else {
@@ -333,10 +321,6 @@ public class OtherSettingsPage extends SetupPage {
         }
 
         private void onToggleNetwork(boolean checked) {
-            SetupStats.addEvent(SetupStats.Categories.SETTING_CHANGED,
-                    SetupStats.Action.ENABLE_NETWORK_LOCATION,
-                    SetupStats.Label.CHECKED, String.valueOf(checked));
-
             if (checked) {
                 setLocationMode(Settings.Secure.LOCATION_MODE_HIGH_ACCURACY);
             } else {
