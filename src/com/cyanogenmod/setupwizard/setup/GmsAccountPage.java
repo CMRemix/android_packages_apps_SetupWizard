@@ -37,7 +37,6 @@ import android.util.Log;
 
 import com.cyanogenmod.setupwizard.R;
 import com.cyanogenmod.setupwizard.SetupWizardApp;
-import com.cyanogenmod.setupwizard.cmstats.SetupStats;
 import com.cyanogenmod.setupwizard.ui.LoadingFragment;
 import com.cyanogenmod.setupwizard.util.SetupWizardUtils;
 
@@ -123,15 +122,12 @@ public class GmsAccountPage extends SetupPage {
     public boolean onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == SetupWizardApp.REQUEST_CODE_SETUP_GMS) {
             if (!mBackupEnabled && SetupWizardUtils.isOwner() && resultCode == Activity.RESULT_OK) {
-                SetupStats.addEvent(SetupStats.Categories.EXTERNAL_PAGE_LOAD,
-                        SetupStats.Action.EXTERNAL_PAGE_RESULT,
-                        SetupStats.Label.GMS_ACCOUNT, "success");
                 launchGmsRestorePage();
             } else {
-                handleResult(requestCode, resultCode);
+                handleResult(resultCode);
             }
         } else if (requestCode == SetupWizardApp.REQUEST_CODE_RESTORE_GMS) {
-            handleResult(requestCode, resultCode);
+            handleResult(resultCode);
             setHidden(true);
         }
         return true;
@@ -148,31 +144,10 @@ public class GmsAccountPage extends SetupPage {
         }
     }
 
-    private void handleResult(int requestCode, int resultCode) {
+    private void handleResult(int resultCode) {
         if (resultCode == Activity.RESULT_CANCELED) {
-            SetupStats.addEvent(SetupStats.Categories.EXTERNAL_PAGE_LOAD,
-                    SetupStats.Action.EXTERNAL_PAGE_RESULT,
-                    requestCode == SetupWizardApp.REQUEST_CODE_SETUP_GMS ?
-                            SetupStats.Label.GMS_ACCOUNT : SetupStats.Label.RESTORE, "canceled");
             getCallbacks().onPreviousPage();
         }  else {
-            if (resultCode == Activity.RESULT_OK) {
-                SetupStats.addEvent(SetupStats.Categories.EXTERNAL_PAGE_LOAD,
-                        SetupStats.Action.EXTERNAL_PAGE_RESULT,
-                        requestCode == SetupWizardApp.REQUEST_CODE_SETUP_GMS ?
-                                SetupStats.Label.GMS_ACCOUNT : SetupStats.Label.RESTORE, "success");
-                getCallbacks().onNextPage();
-            } else {
-                if (canSkip()) {
-                    SetupStats.addEvent(SetupStats.Categories.EXTERNAL_PAGE_LOAD,
-                            SetupStats.Action.EXTERNAL_PAGE_RESULT,
-                            requestCode == SetupWizardApp.REQUEST_CODE_SETUP_GMS ?
-                                    SetupStats.Label.GMS_ACCOUNT : SetupStats.Label.RESTORE, "skipped");
-                    getCallbacks().onNextPage();
-                } else {
-                    getCallbacks().onPreviousPage();
-                }
-            }
             if (SetupWizardUtils.accountExists(mContext, SetupWizardApp.ACCOUNT_TYPE_GMS)) {
                 setHidden(true);
             }
@@ -195,9 +170,6 @@ public class GmsAccountPage extends SetupPage {
                         ActivityOptions.makeCustomAnimation(mContext,
                                 android.R.anim.fade_in,
                                 android.R.anim.fade_out);
-                SetupStats.addEvent(SetupStats.Categories.EXTERNAL_PAGE_LOAD,
-                        SetupStats.Action.EXTERNAL_PAGE_LAUNCH,
-                        SetupStats.Label.PAGE, SetupStats.Label.RESTORE);
                 mFragment.startActivityForResult(
                         intent,
                         SetupWizardApp.REQUEST_CODE_RESTORE_GMS, options.toBundle());
@@ -238,9 +210,6 @@ public class GmsAccountPage extends SetupPage {
                                     ActivityOptions.makeCustomAnimation(mContext,
                                             android.R.anim.fade_in,
                                             android.R.anim.fade_out);
-                            SetupStats.addEvent(SetupStats.Categories.EXTERNAL_PAGE_LOAD,
-                                    SetupStats.Action.EXTERNAL_PAGE_LAUNCH,
-                                    SetupStats.Label.PAGE, SetupStats.Label.GMS_ACCOUNT);
                             mFragment.startActivityForResult(intent,
                                     SetupWizardApp.REQUEST_CODE_SETUP_GMS, options.toBundle());
                         } catch (OperationCanceledException e) {
