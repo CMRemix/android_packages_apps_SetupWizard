@@ -26,6 +26,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
@@ -55,7 +56,7 @@ public class CyanogenSettingsPage extends SetupPage {
     public static final String TAG = "CyanogenSettingsPage";
 
     public static final String KEY_SEND_METRICS = "send_metrics";
-    public static final String DISABLE_NAV_KEYS = "disable_nav_keys";
+    public static final String NAVIGATION_BAR_VISIBLE = "enable_nav_bar";
     public static final String KEY_APPLY_DEFAULT_THEME = "apply_default_theme";
     public static final String KEY_BUTTON_BACKLIGHT = "pre_navbar_button_backlight";
 
@@ -91,8 +92,8 @@ public class CyanogenSettingsPage extends SetupPage {
     private static void writeDisableNavkeysOption(Context context, boolean enabled) {
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
-        CMSettings.Secure.putInt(context.getContentResolver(),
-                CMSettings.Secure.DEV_FORCE_SHOW_NAVBAR, enabled ? 1 : 0);
+        Settings.Secure.putInt(context.getContentResolver(),
+                Settings.Secure.NAVIGATION_BAR_VISIBLE, enabled ? 1 : 0);
         CMHardwareManager hardware = CMHardwareManager.getInstance(context);
         hardware.set(CMHardwareManager.FEATURE_KEY_DISABLE, enabled);
 
@@ -100,6 +101,11 @@ public class CyanogenSettingsPage extends SetupPage {
         if (enabled) {
             CMSettings.Secure.putInt(context.getContentResolver(),
                     CMSettings.Secure.BUTTON_BRIGHTNESS, 0);
+
+            /* If we choose navbar on then disable HW keys toggle */
+            Settings.System.putInt(context.getContentResolver(),
+                    Settings.System.ENABLE_HW_KEYS, 0);
+
         } else {
             int currentBrightness = CMSettings.Secure.getInt(context.getContentResolver(),
                     CMSettings.Secure.BUTTON_BRIGHTNESS, 100);
@@ -107,6 +113,10 @@ public class CyanogenSettingsPage extends SetupPage {
                     currentBrightness);
             CMSettings.Secure.putInt(context.getContentResolver(),
                     CMSettings.Secure.BUTTON_BRIGHTNESS, oldBright);
+
+            /* If we choose navbar off then enable HW keys toggle */
+            Settings.System.putInt(context.getContentResolver(),
+                    Settings.System.ENABLE_HW_KEYS, 1);
         }
     }
 
@@ -115,12 +125,12 @@ public class CyanogenSettingsPage extends SetupPage {
         getCallbacks().addFinishRunnable(new Runnable() {
             @Override
             public void run() {
-                if (getData().containsKey(DISABLE_NAV_KEYS)) {
+                if (getData().containsKey(NAVIGATION_BAR_VISIBLE)) {
                     SetupStats.addEvent(SetupStats.Categories.SETTING_CHANGED,
                             SetupStats.Action.ENABLE_NAV_KEYS,
                             SetupStats.Label.CHECKED,
-                            String.valueOf(getData().getBoolean(DISABLE_NAV_KEYS)));
-                    writeDisableNavkeysOption(mContext, getData().getBoolean(DISABLE_NAV_KEYS));
+                            String.valueOf(getData().getBoolean(NAVIGATION_BAR_VISIBLE)));
+                    writeDisableNavkeysOption(mContext, getData().getBoolean(NAVIGATION_BAR_VISIBLE));
                 }
             }
         });
@@ -210,7 +220,7 @@ public class CyanogenSettingsPage extends SetupPage {
             public void onClick(View view) {
                 boolean checked = !mNavKeys.isChecked();
                 mNavKeys.setChecked(checked);
-                mPage.getData().putBoolean(DISABLE_NAV_KEYS, checked);
+                mPage.getData().putBoolean(NAVIGATION_BAR_VISIBLE, checked);
             }
         };
 
@@ -345,13 +355,13 @@ public class CyanogenSettingsPage extends SetupPage {
         private void updateDisableNavkeysOption() {
             if (!mHideNavKeysRow) {
                 final Bundle myPageBundle = mPage.getData();
-                boolean enabled = CMSettings.Secure.getInt(getActivity().getContentResolver(),
-                        CMSettings.Secure.DEV_FORCE_SHOW_NAVBAR, 0) != 0;
-                boolean checked = myPageBundle.containsKey(DISABLE_NAV_KEYS) ?
-                        myPageBundle.getBoolean(DISABLE_NAV_KEYS) :
+                boolean enabled = Settings.Secure.getInt(getActivity().getContentResolver(),
+                        Settings.Secure.NAVIGATION_BAR_VISIBLE, 0) != 0;
+                boolean checked = myPageBundle.containsKey(NAVIGATION_BAR_VISIBLE) ?
+                        myPageBundle.getBoolean(NAVIGATION_BAR_VISIBLE) :
                         enabled;
                 mNavKeys.setChecked(checked);
-                myPageBundle.putBoolean(DISABLE_NAV_KEYS, checked);
+                myPageBundle.putBoolean(NAVIGATION_BAR_VISIBLE, checked);
             }
         }
 
