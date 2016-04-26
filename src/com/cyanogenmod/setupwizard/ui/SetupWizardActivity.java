@@ -32,6 +32,7 @@ import android.os.UserHandle;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewAnimationUtils;
@@ -51,6 +52,7 @@ import com.cyanogenmod.setupwizard.setup.SetupDataCallbacks;
 import com.cyanogenmod.setupwizard.util.EnableAccessibilityController;
 import com.cyanogenmod.setupwizard.util.SetupWizardUtils;
 
+import cyanogenmod.providers.CMSettings;
 import cyanogenmod.themes.ThemeManager;
 
 import java.util.ArrayList;
@@ -354,7 +356,11 @@ public class SetupWizardActivity extends Activity implements SetupDataCallbacks,
         mFinishingProgressBar.setIndeterminate(true);
         mFinishingProgressBar.startAnimation(fadeIn);
         final ThemeManager tm = ThemeManager.getInstance(this);
-        tm.addClient(this);
+        try {
+            tm.registerThemeChangeListener(this);
+        } catch (Exception e) {
+            Log.w(TAG, "ThemeChangeListener already registered");
+        }
         mSetupData.finishPages();
     }
 
@@ -466,11 +472,13 @@ public class SetupWizardActivity extends Activity implements SetupDataCallbacks,
                 Settings.Global.putInt(getContentResolver(), Settings.Global.DEVICE_PROVISIONED, 1);
                 Settings.Secure.putInt(getContentResolver(),
                         Settings.Secure.USER_SETUP_COMPLETE, 1);
+                CMSettings.Secure.putInt(getContentResolver(),
+                        CMSettings.Secure.CM_SETUP_WIZARD_COMPLETED, 1);
                 if (mEnableAccessibilityController != null) {
                     mEnableAccessibilityController.onDestroy();
                 }
                 final ThemeManager tm = ThemeManager.getInstance(SetupWizardActivity.this);
-                tm.removeClient(SetupWizardActivity.this);
+                tm.unregisterThemeChangeListener(SetupWizardActivity.this);
                 SetupStats.sendEvents(SetupWizardActivity.this);
                 SetupWizardUtils.disableGMSSetupWizard(SetupWizardActivity.this);
                 final WallpaperManager wallpaperManager =
